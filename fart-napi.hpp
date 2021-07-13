@@ -20,7 +20,7 @@ namespace fart {
 				Strong<Array<Type>> fArray;
 				Napi::Array nArray = value.As<Napi::Array>();
 
-				for (size_t idx = 0 ; idx < nArray.Length() ; idx++) {
+				for (uint32_t idx = 0 ; idx < nArray.Length() ; idx++) {
 					Strong<Type> item = left(env, nArray[idx], napiExceptions);
 					if (item == nullptr) continue;
 					fArray->append(item);
@@ -50,10 +50,10 @@ namespace fart {
 
 				Napi::Array keys = nObject.GetPropertyNames();
 
-				for (size_t idx = 0 ; idx < keys.Length() ; idx++) {
+				for (uint32_t idx = 0 ; idx < keys.Length() ; idx++) {
 					Strong<Type> value = left(env, nObject.Get(keys[idx]), napiExceptions);
 					if (value == nullptr) continue;
-					fDictionary->set(left(env, keys[idx], napiExceptions), value);
+					fDictionary->set(Strong<String>(left(env, keys[idx], napiExceptions).as<String>()), value);
 				}
 
 				return fDictionary.as<Type>();
@@ -84,8 +84,8 @@ namespace fart {
 					Array<Type>& fArray = value.as<Array<Type>>();
 					Napi::Array nArray = Napi::Array::New(env);
 
-					for (size_t idx = 0 ; idx < fArray.count() ; idx++) {
-						nArray.Set(idx, right(env, *fArray.itemAtIndex(idx), napiExceptions));
+					for (uint32_t idx = 0 ; idx < fArray.count() ; idx++) {
+						nArray.Set(idx, right(env, fArray[idx], napiExceptions));
 					}
 
 					return nArray;
@@ -104,9 +104,12 @@ namespace fart {
 					Dictionary<Type, Type>& fDictionary = value.as<Dictionary<Type, Type>>();
 					Napi::Object nObject = Napi::Object::New(env);
 
+					Array<Type> keys = fDictionary.keys();
+					Array<Type> values = fDictionary.values();
+
 					for (size_t idx = 0 ; idx < fDictionary.count() ; idx++) {
-						Napi::Value key = right(env, fDictionary.keys()->itemAtIndex(idx), napiExceptions);
-						Napi::Value value = right(env, fDictionary.values()->itemAtIndex(idx), napiExceptions);
+						Napi::Value key = right(env, keys[idx], napiExceptions);
+						Napi::Value value = right(env, values[idx], napiExceptions);
 						nObject.Set(key, value);
 					}
 
