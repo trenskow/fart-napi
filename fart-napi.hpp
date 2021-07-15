@@ -53,7 +53,7 @@ namespace fart {
 				for (uint32_t idx = 0 ; idx < keys.Length() ; idx++) {
 					Strong<Type> value = left(env, nObject.Get(keys[idx]), napiExceptions);
 					if (value == nullptr) continue;
-					fDictionary->set(Strong<String>(left(env, keys[idx], napiExceptions).as<String>()), value);
+					fDictionary->set(left(env, keys[idx], napiExceptions), value);
 				}
 
 				return fDictionary.as<Type>();
