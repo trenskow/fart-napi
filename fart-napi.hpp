@@ -120,11 +120,11 @@ namespace fart {
 					return env.Null();
 				case Type::Kind::number: {
 					switch (value.as<Number<uint64_t>>().subType()) {
-						case Subtype::boolean:
+						case Numeric::Subtype::boolean:
 							return Napi::Boolean::New(env, value.as<Boolean>().value());
-						case Subtype::integer:
+						case Numeric::Subtype::integer:
 							return Napi::Number::New(env, value.as<Integer>().value());
-						case Subtype::floatingPoint:
+						case Numeric::Subtype::floatingPoint:
 							return Napi::Number::New(env, value.as<Float>().value());
 						default:
 							if (napiExceptions) throw Napi::Error::New(env, "Cannot convert data type.");
