@@ -76,12 +76,14 @@ namespace fart {
 			return left(env, value, napiExceptions).as<T>();
 		}
 
-		static Napi::Value right(Napi::Env env, const Type& value, bool napiExceptions) {
+		static Napi::Value right(Napi::Env env, const Type* value, bool napiExceptions) {
 
-			switch (value.kind()) {
+			if (value == nullptr) return env.Undefined();
+
+			switch (value->kind()) {
 				case Type::Kind::array: {
 
-					Array<Type>& fArray = value.as<Array<Type>>();
+					Array<Type>& fArray = value->as<Array<Type>>();
 					Napi::Array nArray = Napi::Array::New(env);
 
 					for (uint32_t idx = 0 ; idx < fArray.count() ; idx++) {
@@ -96,12 +98,12 @@ namespace fart {
 					throw TypeConversionException();
 				}
 				case Type::Kind::date: {
-					Date date = value.as<Date>().to(Date::TimeZone::utc);
+					Date date = value->as<Date>().to(Date::TimeZone::utc);
 					return Napi::Date::New(env, date.durationSinceEpoch().milliseconds());
 				}
 				case Type::Kind::dictionary: {
 
-					Dictionary<Type, Type>& fDictionary = value.as<Dictionary<Type, Type>>();
+					Dictionary<Type, Type>& fDictionary = value->as<Dictionary<Type, Type>>();
 					Napi::Object nObject = Napi::Object::New(env);
 
 					Array<Type> keys = fDictionary.keys();
@@ -119,20 +121,20 @@ namespace fart {
 				case Type::Kind::null:
 					return env.Null();
 				case Type::Kind::number: {
-					switch (value.as<Number<uint64_t>>().subType()) {
+					switch (value->as<Numeric>().subType()) {
 						case Numeric::Subtype::boolean:
-							return Napi::Boolean::New(env, value.as<Boolean>().value());
+							return Napi::Boolean::New(env, value->as<Boolean>().value());
 						case Numeric::Subtype::integer:
-							return Napi::Number::New(env, value.as<Integer>().value());
+							return Napi::Number::New(env, value->as<Integer>().value());
 						case Numeric::Subtype::floatingPoint:
-							return Napi::Number::New(env, value.as<Float>().value());
+							return Napi::Number::New(env, value->as<Float>().value());
 						default:
 							if (napiExceptions) throw Napi::Error::New(env, "Cannot convert data type.");
 							throw TypeConversionException();
 					}
 				}
 				case Type::Kind::string: {
-					return value.as<String>().mapCString<Napi::String>([&env](const char* string) {
+					return value->as<String>().mapCString<Napi::String>([&env](const char* string) {
 						return Napi::String::New(env, string);
 					});
 				}
@@ -144,12 +146,11 @@ namespace fart {
 		}
 
 		template<typename T>
-		static T right(Napi::Env env, const Type& value, bool napiExceptions) {
+		static T right(Napi::Env env, const Type* value, bool napiExceptions) {
 			return right(env, value, napiExceptions).As<T>();
 		}
 
 	};
-
 
 }
 
